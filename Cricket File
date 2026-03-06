@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricketLive - Match Center</title>
+    <style>
+        :root {
+            --primary: #1a4d2e; /* Cricket Green */
+            --accent: #f4d03f; /* Gold */
+            --bg: #f4f7f6;
+            --text: #333;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* Score Card Box */
+        .score-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .match-status {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .score-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .overs-display {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Match Info Bar */
+        .match-info {
+            background: var(--white);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Recent Balls */
+        .recent-balls {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .ball {
+            min-width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .ball.run { color: var(--primary); }
+        .ball.wicket { color: #d9534f; }
+        .ball.no { color: #f0ad4e; }
+
+        /* Batting & Bowling Tables */
+        .stats-section {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            background: #eee;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            color: #777;
+            font-weight: 600;
+        }
+
+        .striker {
+            background-color: #e8f5e9;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        /* Animation for live updates */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: #d9534f;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CricketLive</h1>
+    </header>
+
+    <div class="container">
+        
+        <!-- Live Score Card -->
+        <div class="score-card">
+            <div class="match-status"><span class="live-indicator"></span> Live - 2nd ODI</div>
+            <div class="teams">
+                <span>IND</span>
+                <span style="color: #888;">vs</span>
+                <span>AUS</span>
+            </div>
+            <div class="score-display">
+                <span id="score">245</span>/<span id="wickets">4</span>
+            </div>
+            <div class="overs-display">
+                <span id="overs">42.3</span> Overs
+            </div>
+        </div>
+
+        <!-- Match Context -->
+        <div class="match-info">
+            <div>
+                <strong>Target:</strong> 280<br>
+                <span style="color: #666;">Need 35 runs in 45 balls</span>
+            </div>
+            <div style="text-align: right;">
+                <strong>Venue:</strong> Wankhede<br>
+                <span style="color: #666;">Mumbai</span>
+            </div>
+        </div>
+
+        <!-- Recent Balls -->
+        <div class="section-title">Recent Balls</div>
+        <div class="recent-balls" id="recentBalls">
+            <!-- JS will populate this -->
+            <div class="ball run">4</div>
+            <div class="ball run">1</div>
+            <div class="ball no">NB</div>
+            <div class="ball wicket">W</div>
+            <div class="ball run">6</div>
+        </div>
+
+        <!-- Batting Stats -->
+        <div class="stats-section">
+            <div class="section-title">Batting</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Batter</th>
+                        <th>R</th>
+                        <th>B</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>SR</th>
+                    </tr>
+                </thead>
+                <tbody id="battingTable">
+                    <tr>
+                        <td class="striker">V. Kohli <span style="font-size:0.8em">not out</span></td>
+                        <td>89</td>
+                        <td>72</td>
+                        <td>8</td>
+                        <td>2</td>
+                        <td>123.6</td>
+                    </tr>
+                    <tr>
+                        <td>S. Iyer</td>
+                        <td>45</td>
+                        <td>38</td>
+                        <td>4</td>
+                        <td>1</td>
+                        <td>118.4</td>
+                    </tr>
+                    <tr>
+                        <td>R. Sharma</td>
+                        <td>62</td>
+                        <td>55</td>
+                        <td>6</td>
+                        <td>2</td>
+                        <td>112.7</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bowling Stats -->
+        <div class="stats-section">
+            <div class="section-title">Bowling</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bowler</th>
+                        <th>O</th>
+                        <th>M</th>
+                        <th>R</th>
+                        <th>W</th>
+                        <th>Eco</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P. Cummins</td>
+                        <td>8.3</td>
+                        <td>1</td>
+                        <td>42</td>
+                        <td>2</td>
+                        <td>4.94</td>
+                    </tr>
+                    <tr>
+                        <td>M. Starc</td>
+                        <td>9</td>
+                        <td>0</td>
+                        <td>55</td>
+                        <td>1</td>
+                        <td>6.11</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2023 CricketLive Demo. All rights reserved.
+    </footer>
+
+    <script>
+        // Simulating Live Data Updates
+        // In a real app, this would fetch data from an API
+        
+        const scoreEl = document.getElementById('score');
+        const wicketsEl = document.getElementById('wickets');
+        const oversEl = document.getElementById('overs');
+        const recentBallsEl = document.getElementById('recentBalls');
+
+        let currentScore = 245;
+        let currentWickets = 4;
+        let currentOvers = 42.3;
+
+        function addBallToLog(value, type) {
+            const ballDiv = document.createElement('div');
+            ballDiv.className = `ball ${type}`;
+            ballDiv.innerText = value;
+            
+            // Add to beginning of list
+            recentBallsEl.insertBefore(ballDiv, recentBallsEl.firstChild);
+
+            // Keep only last 10 balls
+            if (recentBallsEl.children.length > 10) {
+                recentBallsEl.removeChild(recentBallsEl.lastChild);
+            }
+        }
+
+        function updateScore() {
+            // Randomly decide what happens next
+            const outcomes = [
+                { val: 4, type: 'run' },
+                { val: 6, type: 'run' },
+                { val: 1, type: 'run' },
+                { val: 2, type: 'run' },
+                { val: 0, type: 'run' },
+                { val: 'W', type: 'wicket' },
+                { val: 'NB', type: 'no' }
+            ];
+
+            const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+            
+            // Update Score
+            if (outcome.type === 'wicket') {
+                currentWickets++;
+                wicketsEl.innerText = currentWickets;
+                addBallToLog(outcome.val, outcome.type);
+            } else if (outcome.type === 'no') {
+                currentScore++;
+                scoreEl.innerText = currentScore;
+                addBallToLog(outcome.val, outcome.type);
+            } else {
+                currentScore += parseInt(outcome.val);
+                scoreEl.innerText = currentScore;
+                addBallToLog(outcome.val, outcome.type);
+            }
+
+            // Update Overs (every 6 balls would be a new over, simplified here)
+            // Just incrementing slightly for visual effect
+            if (Math.random() > 0.7) {
+                currentOvers = (parseFloat(currentOvers) + 0.1).toFixed(1);
+                oversEl.innerText = currentOvers;
+            }
+        }
+
+        // Simulate a ball being bowled every 3 seconds
+        setInterval(updateScore, 3000);
+
+    </script>
+</body>
+</html>
